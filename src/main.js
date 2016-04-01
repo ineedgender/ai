@@ -12,15 +12,15 @@ function multiply(a, b) {
 }
 
 function natural_log(a) {
-  Math.log(a);
+  return Math.log(a);
 }
 
 function abs(a) {
-  Math.abs(a);
+  return Math.abs(a);
 }
 
 function exp(a) {
-  Math.exp(a);
+  return Math.exp(a);
 }
 
 function not(a) {
@@ -96,23 +96,25 @@ positive_float_primitive_functions = {
 }
 
 bool_primitive_functions = {
-  'not': {input: ['bool'], implementation: not},
+  'not': {input: ['bool'], implementation: 'not'},
   'and': {input: ['bool', 'bool'], implementation: 'SPECIAL_AND'},
   'or': {input: ['bool', 'bool'], implementation: 'SPECIAL_OR'},
   'bernoulli': {input: ['float'], implementation: 'bernoulli'},
 }
 
-TYPE1_primitive_functions = {
+TYPE_primitive_functions = {
   'if': {input: ['bool', '<TYPE>', '<TYPE>'], implementation: 'SPECIAL_IF'},
-  'let': {input: ['variable_definition', '<TYPE>', implementation: '']} // Should be special.
+  'let': {input: ['variable_definition', '<TYPE>'], implementation: ''}, // Should be special.
   'do_2_blocks': {} // Also should be special.
 }
 
+/*
 variable_definition_primitive_functions {
   'def': ...
 }
 
 any_block...
+*/
 
 //function_primitive_procedures = {
 //  'generate_new': {input: [], implementation: 'generate_new_function' }
@@ -123,7 +125,7 @@ primitive_functions = {
   'float': float_primitive_functions,
   'positive_float': positive_float_primitive_functions,
   'bool': bool_primitive_functions,
-  '<TYPE>': TYPE1_primitive_functions,
+  '<TYPE>': TYPE_primitive_functions,
   // 'function<TYPE>': function_primitive_procedures,
 };
 
@@ -138,7 +140,7 @@ random_constant_generators = {
   'positive_float': function() { return Math.exp(uniformcontinuous01()); },
 }
 
-function sample_procedure_helper(output_type, output_type_pattern) {
+function sample_procedure_helper(env, output_type, output_type_pattern) {
   var operator_name = get_random_element(Object.keys(primitive_functions[output_type_pattern]));
   var returning_procedure = [operator_name];
   var operator_data = primitive_functions[output_type_pattern][operator_name];
@@ -148,12 +150,22 @@ function sample_procedure_helper(output_type, output_type_pattern) {
     if (operand == "<TYPE>") {
       operand = output_type;
     }
-    returning_procedure.push(sample_procedure(operand));
+    returning_procedure.push(sample_procedure(env, operand));
   }
   return returning_procedure;
 }
 
-function sample_procedure(output_type) {
+function sample_categorical(values, probs) {
+  var p = Math.random();
+  var probs_sum = probs.reduce(sum);
+  probs = probs.map( function(v) { return v / probs_sum; } );
+  
+  var accum = 0;
+  
+  return probs;
+}
+
+function sample_procedure(env, output_type) {
   if (bernoulli(0.25)) {
     return sample_procedure_helper(output_type, output_type);
   } else if (bernoulli(0.25)) {
@@ -164,13 +176,32 @@ function sample_procedure(output_type) {
 }
 
 function wr(text) {
-  document.getElementById('mydiv').innerHTML += text;
+  document.getElementById('mydiv').innerHTML += JSON.stringify(text);
   document.getElementById('mydiv').innerHTML += '<hr>';
 }
 
 for (index = 0; index < 10; index++) {
-  wr(JSON.stringify(sample_procedure('int')));
+  //wr(sample_procedure('int'));
 }
+
+wr(sample_categorical([1, 2, 3], [1, 2, 3]));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
