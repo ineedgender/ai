@@ -1,4 +1,12 @@
 
+What to do:
+1) Finish sample_procedure.
+2) Introduce type "function<TYPE>".
+3) Re-write sample_procedure and helper functions in the same grammar.
+4) Implement a few mutation/cross-over operators.
+5) Implement tests.
+6) Run it.
+
 function sum(a, b) {
   return a + b;
 }
@@ -161,18 +169,24 @@ function sample_categorical(values, probs) {
   probs = probs.map( function(v) { return v / probs_sum; } );
   
   var accum = 0;
-  
-  return probs;
+  for (index = 0; index < probs.length; index++) {
+    accum += probs[index];
+    if (p < accum || index + 1 == probs.length) {
+      return values[index];
+    }
+  }
 }
 
 function sample_procedure(env, output_type) {
-  if (bernoulli(0.25)) {
-    return sample_procedure_helper(output_type, output_type);
-  } else if (bernoulli(0.25)) {
-    return sample_procedure_helper(output_type, '<TYPE>');
-  } else {
-    return (random_constant_generators[output_type])();
+  expr_type = sample_categorical(
+    ['primitive_operator', 'if', 'let', 'variable_mutation', 'loop'],
+    [5, 1, 1, 1]);
+  
+  if (expr_type == 'primitive_operator') {
+    return sample_procedure_helper(env, output_type, output_type);
   }
+  
+  return null;
 }
 
 function wr(text) {
